@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
-const PORT = 8001;
+const PORT = process.env.PORT || 8001;
 const legalKeys = ['task', 'isCompleted'];
+
 app.use(express.json());
 
 let tasksToDo = [
@@ -67,7 +68,7 @@ app.route('/tasks')
 app.route('/tasks/:id')
     .get((req, res) => {
         const { id: targetId } = req.params;
-        const targetIndex = tasksToDo.findIndex(todo => todo.id == parseInt(targetId));
+        const targetIndex = tasksToDo.findIndex(todo => todo.id === parseInt(targetId));
         if(targetIndex === -1) {
             return res.sendStatus(404);
         }
@@ -88,17 +89,17 @@ app.route('/tasks/:id')
         tasksToDo[targetIndex] = todo;
         res.send(tasksToDo);
     })
-    .patch((req, res) => {
+    .patch((req, res) => {          // PATCH to this route would allow updating 'task' or/and 'isComplete'
         const { body } = req;
         const keys = Object.keys(body);
-        keyChecker(keys, res);
+        // keyChecker(keys, res);
         const { id: targetId } = req.params;
         const targetIndex = tasksToDo.findIndex(todo => todo['id'] === parseInt(targetId));
         keys.forEach((key) => {
             tasksToDo[targetIndex][key] = body[key];
             res.send(tasksToDo).status(200);
         });
-    })
+    })  
     .delete((req, res) => {
         const {id: targetId} = req.params;
         tasksToDo = tasksToDo.filter(todo => todo['id'] === parseInt(targetId));
@@ -106,12 +107,11 @@ app.route('/tasks/:id')
     });
 
 app.route('/tasks/complete/:id')
-    .patch((req, res) => {
+    .patch((req, res) => {          // PATCH to this route would check a task as complete
         const { id: targetId } = req.params;
         const targetIndex = tasksToDo.findIndex(todo => todo['id'] === parseInt(targetId));
         tasksToDo.at(targetIndex)['isComplete'] = true;
         res.send(tasksToDo).status(200);
     });
-
 
 app.listen(PORT, console.log(`Ok, ready on ${PORT}`));
